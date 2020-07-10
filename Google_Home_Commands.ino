@@ -18,6 +18,8 @@
   Code is edited by Sachin Soni for it's project called
   Ultimate Home Automation
 
+  Code was also altered by Inbound for use in home controlling lights fans and led strips
+
   For Project video, visit his YouTube channel named "CreativeDesk"
 
  
@@ -29,6 +31,7 @@
 #include <WiFi.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
+#include <FastLED.h>
 
 
 
@@ -39,7 +42,7 @@
 //Relays for switching appliances
 #define Relay1            12
 #define Relay2            13
-#define ColorPicker
+#define ColorPicker       6
 //#define Relay3            14
 //#define Relay4            27
 //#define buzzer            26
@@ -83,6 +86,7 @@ Adafruit_MQTT_Subscribe Light1 = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/f
 Adafruit_MQTT_Subscribe Fan1 = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/relay2");
 Adafruit_MQTT_Subscribe Light2 = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/relay3");
 Adafruit_MQTT_Subscribe Fan2 = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/relay4");
+Adafruit_MQTT_Subscribe ColorPicker = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feed/ws2812-color-picker");
 
 
 
@@ -98,10 +102,26 @@ void setup() {
 
   delay(10);
 
+  
+  String customColor = byte red, green, blue
+  unsigned long rgb = 
+  red = rgb >> 16 ;
+
+  green = (rgb & 0x00ff00) >> 8;
+
+  blue = (rgb & 0x0000ff);
+
+  rgb = 0;
+
+  rgb |= red <<16;
+  rgb |= blue <<8;
+  rgb |=green;
+
   pinMode(Relay1, OUTPUT);
   pinMode(Relay2, OUTPUT);
   pinMode(Relay3, OUTPUT);
   pinMode(Relay4, OUTPUT);
+  pinMode(ColorPicker, OUTPUT);
 
 
   Serial.println(F("Adafruit MQTT demo"));
@@ -127,6 +147,7 @@ void setup() {
   mqtt.subscribe(&Fan1);
   mqtt.subscribe(&Light2);
   mqtt.subscribe(&Fan2);
+  mqtt.subscribe(&ColorPicker);
 }
 
 
@@ -164,6 +185,10 @@ void loop() {
       Serial.println((char *)Fan2.lastread);
       int Fan2_State = atoi((char *)Fan2.lastread);
       digitalWrite(Relay4, Fan2_State);
+      
+    }
+    if(subscription == &ColorPicker){
+      serial.print("Set Color To: " + customColor);
       
     }
   }
